@@ -21,32 +21,37 @@ Repository URLs:
 Longer Description
 ------------------
 
-Tails is a portable linux distribution, packed with nice tools for private and
-relatively censorship-resistant internet access, that is easy to drop onto a USB
-stick and use with any arbitrary PC one might come across.
+Tails is a portable desktop linux distribution, packed with nice tools for
+private and relatively censorship-resistant internet access, that is easy to
+drop onto a USB stick and use with any arbitrary PC or laptop that one might
+come across.
 
 Being a specialized OS like that, it incorporates many design decisions - starting
 from being portable to avoid possibility of storing persistent logs/data - which
 might not be obvious and need some documentation to understand and use correctly.
 
-Which is why it has a good documentation on its website (see e.g. its
-`Design Documents`_), but that creates a chicken-and-egg problem wrt accessing it,
-if one might need it to the site properly, which is easily addressed by packing
-all that documentation into an offline directory, where it can be read using any
-bootable OS with a browser (including Tails itself of course).
+Which is why it has good documentation on its website (see e.g. its
+`Design Documents`_), and also available in the running Tails distribution
+(under Documentation option in the main menu), which can be useful in
+offline form as well, as a directory of html files (accessible via any
+browser/device), and that's what script in this repository puts together.
 
 Using Dockerfile allows for an easy one-command self-contained and
 highly-reproducible build process, without needing to install anything except
-for docker tools on the host (running any OS supported by docker) where this
+for docker tools on the host (running any OS supported by docker), where this
 documentation bundle will be produced.
 
-Some parts of the documentation link to other online resources, but these are
+Alternative can be to `follow official guidelines for how to do it on debian`_,
+or copy documentation directory from e.g. Tails running in a local VM.
+
+Some parts of the docs link to other online resources, but these are
 usually not specific to Tails and its quirks, so are out of scope here.
-If some limited subset of these is needed for offline use, can recommend
-`SingleFile browser extension`_ which can easily save those with all embedded
-content into a single self-contained HTML file.
+If some limited subset of them is also needed for offline use, can recommend
+`SingleFile browser extension`_ that easily saves those with all embedded
+content into a single self-contained HTML file with one click.
 
 .. _Design Documents: https://tails.boum.org/contribute/design/
+.. _follow official guidelines for how to do it on debian: https://tails.boum.org/contribute/build/website/
 .. _SingleFile browser extension: https://github.com/gildas-lormeau/SingleFile
 
 
@@ -58,16 +63,16 @@ run commands in order to create an output (a docker image or other artifact).
 
 `Dockerfile in this repository`_ is intended to be used with first-party
 `docker buildx`_ tool/plugin to produce "tails-website" directory,
-by running using the following command (in the same dir as Dockerfile)::
+by running the following command (in the same dir as Dockerfile)::
 
   docker buildx build --output type=local,dest=. .
 
-Command does not need sudo/root permissions, only access to a docker daemon socket.
+Command does not need sudo/root permissions, only access to a running docker daemon socket.
 
-It should run through all steps, finishing with "exporting to client / copying files",
+It should go through all steps, finishing with "exporting to client / copying files",
 creating "tails-website" directory under the current dir (according to ``dest=.`` option).
 
-If running command prints error with a long help message - make sure
+If running the command prints error with a long help message, make sure
 docker-buildx plugin is installed (e.g. ``pacman -S docker-buildx``),
 while any errors mentioning docker socket or permissions on it usually indicate
 that either docker daemon is not running on the system (has to be started with
@@ -75,16 +80,17 @@ that either docker daemon is not running on the system (has to be started with
 to access its socket (often solved by proper group or something - see docker or
 distro-specific docs for it).
 
-Copy that resulting "tails-website" dir somewhere portable and open "index.html"
-file in it using any browser, and access all documentation pages via links from there.
+Copy resulting "tails-website" dir somewhere portable (or whatever reader device),
+open "index.html" file in it using any browser or an html reader app, and access
+all documentation pages via links from there.
 
 Dockerfile for the buld command above also supports some customization
 via --build-arg option(s), for example ``--build-arg DEBIAN_TAG=bullseye-slim``
 to use specific debian release for the build (see `dockerhub page for debian
-image`_ for a list of these, default is "stable-slim"),
+image`_ for a list of these, default is "stable-slim" moving target),
 or ``--build-arg BUILD_LANGS=yes`` to build all non-english language translations
 (disabled by default for faster build and smaller resulting dir).
-See Dockerfile itself for a list of such supported customizations at the top.
+See Dockerfile itself for a full list of such supported customizations at the top.
 
 .. _Dockerfile in this repository: Dockerfile
 .. _docker buildx: https://github.com/docker/buildx
@@ -97,17 +103,15 @@ Misc links, tips and tricks
 
 - Tails can be run in a Virtual Machine from ISO file within some existing OS,
   producing an almost-certainly more private environment than general-purpose
-  host OS and same things installed there.
+  host OS with same things installed there, for a variety of good reasons.
 
 
-- Modern USB sticks can have a lot of space, much more than 1-2G that tails needs,
+- Modern USB sticks can have a lot of space, much more than 1-2G that Tails needs,
   and it is silly to only write/carry a single distribution image/iso on those.
 
   Easy way to cram as many of these there as one wants, with a space to spare
-  for any normal files too, is to put a Ventoy_ tool on the USB drive itself,
+  for any normal files too, is to put a `Ventoy tool`_ on the USB drive itself,
   and drop distribution images/ISOs in there, which will all become bootable options.
-
-  .. _Ventoy: https://www.ventoy.net/en/index.html
 
 
 - If Ventoy isn't your cup of tea for any reason (need custom partitioning/fs
@@ -146,10 +150,14 @@ Misc links, tips and tricks
       initrd (loop)/live/initrd.img
     }
 
-  More up-to-date cmdline opts can be copied from ``isolinux/live64.cfg`` on the
-  tails iso file itself, which it normally uses to start through isolinux bootloader.
+  More up-to-date cmdline opts can be copied from ``isolinux/live64.cfg``
+  on the tails iso file itself, which it normally uses to start through
+  isolinux bootloader there.
 
 
-- MicroSD card can be easily formatted with MBR and normal first partition for
-  smartphone data, followed by e.g. ext4 with ISOs and GRUB2 in there, and used
-  as a bootable media with any USB card-reader.
+- Any MicroSD card can be easily formatted with MBR and normal first partition
+  for windows/smartphone data, followed by e.g. ext4 with ISOs and GRUB2 in there,
+  and used as a bootable media with any USB card-reader.
+
+
+.. _Ventoy tool: https://www.ventoy.net/
