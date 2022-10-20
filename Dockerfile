@@ -11,6 +11,9 @@
 ## See https://hub.docker.com/_/debian for the list of available tags
 #ARG DEBIAN_TAG= -- defined before FROM block below
 
+## Branch of https://gitlab.tails.boum.org/tails/tails to use (default=stable)
+#ARG TAILS_BRANCH= -- defined under FROM block below, cannot be set here
+
 ## Whether to build all non-english documentation pages
 ## Default is "no" to only build english stuff, to save time/space, use "yes" value to enable it
 #ARG BUILD_LANGS= -- defined under FROM block below, cannot be set here
@@ -19,6 +22,7 @@
 ARG DEBIAN_TAG=stable-slim
 FROM debian:${DEBIAN_TAG} as build
 
+ARG TAILS_BRANCH=stable
 ARG BUILD_LANGS=no
 
 USER 0
@@ -34,7 +38,8 @@ RUN aptx update
 RUN aptx install git ca-certificates
 RUN update-ca-certificates
 
-RUN git clone --depth=1 https://gitlab.tails.boum.org/tails/tails.git
+RUN git clone --depth=1 --single-branch -b $TAILS_BRANCH \
+	https://gitlab.tails.boum.org/tails/tails.git
 WORKDIR /build/tails
 
 RUN install --owner root --group root --mode 644 \
@@ -42,8 +47,8 @@ RUN install --owner root --group root --mode 644 \
 RUN echo >/etc/apt/sources.list.d/ikiwiki.list 'deb https://deb.tails.boum.org/ ikiwiki main'
 RUN printf >/etc/apt/preferences.d/ikiwiki.pref \
 	'Package: ikiwiki' 'Pin: origin deb.tails.boum.org' 'Pin-Priority: 1000'
-RUN aptx update
 
+RUN aptx update
 RUN aptx install ikiwiki perlmagick po4a=0.62-1 \
 	libyaml-perl libyaml-libyaml-perl libyaml-syck-perl \
 	libxml-treebuilder-perl
@@ -54,6 +59,7 @@ RUN [ "$BUILD_LANGS" != yes ] || { awk \
 	<ikiwiki.setup >ikiwiki.setup.new && mv ikiwiki.setup.new ikiwiki.setup; }
 
 RUN ./build-website
+
 RUN [ "$BUILD_LANGS" = yes ] || { \
 	cd config/chroot_local-includes/usr/share/doc/tails/website \
 	&& { [ -e index.html ] || cp index.en.html index.html; } }
